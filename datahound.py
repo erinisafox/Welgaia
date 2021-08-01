@@ -1,4 +1,5 @@
 import chess.pgn
+import chess.variant
 from tqdm import tqdm
 
 
