@@ -78,6 +78,8 @@ def mainloop():
                 continue
             # plotting magic here
             # args: yarray, xarray, minbucket, overflow, binwidth, xlabel, ylabel, file
+            plotter.frequency(acpllist, 0, 200, 10, "acpl", file)
+            plotter.frequency(movetimelist, 0, 20, 1, "movetime", file)
             plotter.compare(acpllist, remainingtimelist, 0, 180, 6, "remainingtime", "acpl", file)
             plotter.compare(acpllist, movetimelist, 0, 10, 1, "movetime", "acpl", file)
             plotter.compare(acpllist, evalslist, -900, 900, 150, "evaluation", "acpl", file)
