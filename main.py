@@ -68,6 +68,9 @@ def mainloop():
         if i == '1':
             file, focus, numgames = selectPGN()
         if i == '2':
+            if file == "nothing, yet":
+                print("No file selected, yet")
+                continue
             evalslist, remainingtimelist, acpllist, movetimelist, isamistakelist, legalmoveslist, phaseslist = datahound.hound(file, focus, numgames)
         if i == '3':
             if evalslist == []:
@@ -75,20 +78,20 @@ def mainloop():
                 continue
             # plotting magic here
             # args: yarray, xarray, minbucket, overflow, binwidth, xlabel, ylabel, file
-            plotter.compare(acpllist, remainingtimelist, 0, 180, 6, "Remaining Time (sec)", "ACPL", file)
-            plotter.compare(acpllist, movetimelist, 0, 10, 1, "Move Time (sec)", "ACPL", file)
-            plotter.compare(acpllist, evalslist, -900, 900, 150, "Evaluation", "ACPL", file)
-            plotter.compare(movetimelist, evalslist, -900, 900, 150, "Evaluation", "Move Time (sec)", file)
-            plotter.compare(acpllist, legalmoveslist, 1, 30, 1, "Number of Legal Moves", "ACPL", file)
-            plotter.compare(movetimelist, legalmoveslist, 1, 40, 1, "Number of Legal Moves", "Move Time (sec)", file)
-            plotter.compare(remainingtimelist, legalmoveslist, 1, 40, 1, "Number of Legal Moves", "Remaining Time (sec)", file)
-            plotter.compare(evalslist, legalmoveslist, 1, 40, 1, "Number of Legal Moves", "Evaluation", file)
-            plotter.compare(acpllist, phaseslist, 1, 14, 1, "Game Phase", "ACPL", file)
-            plotter.compare(movetimelist, remainingtimelist, 0, 180, 6, "Remaining Time (sec)", "Move Time (sec)", file)
-            plotter.compare(remainingtimelist, phaseslist, 1, 14, 1, "Game Phase", "Remaining Time (sec)", file)
-            plotter.compare(legalmoveslist, phaseslist, 1, 14, 1, "Game Phase", "Number of Legal Moves", file)
-            plotter.compare(isamistakelist, legalmoveslist, 1, 40, 1, "Number of Legal Moves", "Percentage Mistakes", file)
-            plotter.compare(isamistakelist, movetimelist, 0, 10, 1, "Move Time (sec)", "Percentage Mistakes", file)
+            plotter.compare(acpllist, remainingtimelist, 0, 180, 6, "remainingtime", "acpl", file)
+            plotter.compare(acpllist, movetimelist, 0, 10, 1, "movetime", "acpl", file)
+            plotter.compare(acpllist, evalslist, -900, 900, 150, "evaluation", "acpl", file)
+            plotter.compare(movetimelist, evalslist, -900, 900, 150, "evaluation", "movetime", file)
+            plotter.compare(acpllist, legalmoveslist, 1, 30, 1, "legalmoves", "acpl", file)
+            plotter.compare(movetimelist, legalmoveslist, 1, 40, 1, "legalmoves", "movetime", file)
+            plotter.compare(remainingtimelist, legalmoveslist, 1, 40, 1, "legalmoves", "remainingtime", file)
+            plotter.compare(evalslist, legalmoveslist, 1, 40, 1, "legalmoves", "evaluation", file)
+            plotter.compare(acpllist, phaseslist, 1, 14, 1, "gamephase", "acpl", file)
+            plotter.compare(movetimelist, remainingtimelist, 0, 180, 6, "remainingtime", "movetime", file)
+            plotter.compare(remainingtimelist, phaseslist, 1, 14, 1, "gamephase", "remainingtime", file)
+            plotter.compare(legalmoveslist, phaseslist, 1, 14, 1, "gamephase", "legalmoves", file)
+            plotter.compare(isamistakelist, legalmoveslist, 1, 40, 1, "legalmoves", "percentmistakes", file)
+            plotter.compare(isamistakelist, movetimelist, 0, 10, 1, "movetime", "percentmistakes", file)
         if i == '0':
             return
 
