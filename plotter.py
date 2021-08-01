@@ -52,7 +52,7 @@ def compare(cpls, otherarray, a, b, c, xaxislabel, yaxislabel, file):
     plt.ylim(bottom=0)
     plt.xlabel(xaxislabel)
     plt.ylabel(yaxislabel)
-    plt.title(file.split("/")[-1])
+    plt.title(file.split(os.sep)[-1])
 
     newdir = f"plot/{file.split('_')[0].split(os.sep)[-1]}/{file.split(os.sep)[-1][:-4]}"
     if not os.path.exists(os.path.dirname(newdir)):
