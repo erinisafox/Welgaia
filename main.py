@@ -54,6 +54,7 @@ def mainloop():
     isamistakelist = []
     legalmoveslist = []
     phaseslist = []
+    mistakespergamelist = []
     while True:
         print("")
         print("Welgaia")
@@ -71,7 +72,7 @@ def mainloop():
             if file == "nothing, yet":
                 print("No file selected, yet")
                 continue
-            evalslist, remainingtimelist, acpllist, movetimelist, isamistakelist, legalmoveslist, phaseslist = datahound.hound(file, focus, numgames)
+            evalslist, remainingtimelist, acpllist, movetimelist, isamistakelist, legalmoveslist, phaseslist, mistakespergamelist = datahound.hound(file, focus, numgames)
         if i == '3':
             if evalslist == []:
                 print("Nothing to plot since nothing was hounded")
@@ -80,6 +81,7 @@ def mainloop():
             # args: yarray, xarray, minbucket, overflow, binwidth, xlabel, ylabel, file
             plotter.frequency(acpllist, 0, 200, 10, "acpl", file)
             plotter.frequency(movetimelist, 0, 20, 1, "movetime", file)
+            plotter.frequency(mistakespergamelist, 0, 20, 1, "mistakespergame", file)
             plotter.compare(acpllist, remainingtimelist, 0, 180, 6, "remainingtime", "acpl", file)
             plotter.compare(acpllist, movetimelist, 0, 10, 1, "movetime", "acpl", file)
             plotter.compare(acpllist, evalslist, -900, 900, 150, "evaluation", "acpl", file)
@@ -93,6 +95,7 @@ def mainloop():
             plotter.compare(remainingtimelist, phaseslist, 1, 14, 1, "gamephase", "remainingtime", file)
             plotter.compare(legalmoveslist, phaseslist, 1, 14, 1, "gamephase", "legalmoves", file)
             plotter.compare(isamistakelist, legalmoveslist, 1, 40, 1, "legalmoves", "percentmistakes", file)
+            plotter.compare(isamistakelist, movetimelist, 0, 10, 1, "movetime", "percentmistakes", file)
             plotter.compare(isamistakelist, movetimelist, 0, 10, 1, "movetime", "percentmistakes", file)
         if i == '0':
             return
