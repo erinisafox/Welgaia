@@ -46,52 +46,58 @@ def hound(file, focus, numgames):
     legalmoveslist = []
     phaseslist = []
     isamistakelist = []
+    mistakespergamelist = []
 
     # iterate through all the games
     for X in tqdm(range(0, numgames)):
-        # if you typed in numgames incorrectly, kill it before it throws an error
-        game = chess.pgn.read_game(pgn)
-        if game is None:
-            break
+        # try to process a game. catch it if something goes wrong (ex. foreign language or some weird bug)
+        try:
+            game = chess.pgn.read_game(pgn)
+            if game is None:
+                break
 
-        evallist = []  # temp list of evals
-        timeleftlist = []  # temp list of clocks
-        nummoveslist = []
-        phaselist = []
+            evallist = []  # temp list of evals
+            timeleftlist = []  # temp list of clocks
+            nummoveslist = []
+            phaselist = []
+            mistakespergame = 0
 
-        # figure out the focus player's pov
-        if game.headers["White"].lower() in focus.lower():
-            pov = True  # we got white
-        else:
-            pov = False  # we got black
+            # figure out the focus player's pov
+            if game.headers["White"].lower() in focus.lower():
+                pov = True  # we got white
+            else:
+                pov = False  # we got black
 
-        # figure out the increment
-        timecontrol = game.headers["TimeControl"].split("+")
-        basetc = int(timecontrol[0])
-        inctc = int(timecontrol[1])
-        if basetc != 180 or inctc != 0:
-            pass
-        # get evals and clock times for both players
-        # will only care about pov player later on
+            # figure out the increment
+            timecontrol = game.headers["TimeControl"].split("+")
+            basetc = int(timecontrol[0])
+            inctc = int(timecontrol[1])
+            if basetc != 180 or inctc != 0:
+                pass
+            # get evals and clock times for both players
+            # will only care about pov player later on
 
-        board = game.board()
-        board.reset()
-        for node in game.mainline():
-            weval = node.eval()
-            board.push(node.move)
-            if weval is None:
-                continue
-            weval = weval.white().score(mate_score=2000)
-            if weval < -maxcpl:
-                weval = -maxcpl
-            if weval > maxcpl:
-                weval = maxcpl
+            board = game.board()
+            board.reset()
+            for node in game.mainline():
+                weval = node.eval()
+                board.push(node.move)
+                if weval is None:
+                    continue
+                weval = weval.white().score(mate_score=2000)
+                if weval < -maxcpl:
+                    weval = -maxcpl
+                if weval > maxcpl:
+                    weval = maxcpl
 
-            timeleft = node.clock()
-            phaselist.append(calcPhase(board.fen()))
-            evallist.append(weval)
-            timeleftlist.append(timeleft)
-            nummoveslist.append(board.legal_moves.count())
+                timeleft = node.clock()
+                phaselist.append(calcPhase(board.fen()))
+                evallist.append(weval)
+                timeleftlist.append(timeleft)
+                nummoveslist.append(board.legal_moves.count())
+        except:
+            print(f"Skipped Game {X+1} because some nonsense happened")
+            continue
         # end
 
         # figure out where to start analyzing only pov player
@@ -112,9 +118,12 @@ def hound(file, focus, numgames):
             phaseslist.append(phaselist[X])
             if acpllist[-1] > 100:
                 isamistakelist.append(100)
+                mistakespergame += 1
             else:
                 isamistakelist.append(0)
+        if len(evallist) > 1:
+            mistakespergamelist.append(mistakespergame)
 
-    return evalslist, remainingtimelist, acpllist, movetimelist, isamistakelist, legalmoveslist, phaseslist
+    return evalslist, remainingtimelist, acpllist, movetimelist, isamistakelist, legalmoveslist, phaseslist, mistakespergamelist
 
 # end of file
