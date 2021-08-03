@@ -1,9 +1,11 @@
 import matplotlib.pyplot as plt
 import os
 from math import sqrt
+from math import exp
+from math import factorial
 
-# 95% ci assuming gaussian, which is a bad assumption
-# should use bca intervals, but implementation is not presently worth the time
+# normal confidence intervals, 95%
+# abc method courtesy of Constantine Evans at caltech, is preferred, but ran into memory issues
 def normalci(array):
     if len(array) < 2:
         return 0
@@ -37,7 +39,6 @@ def compare(cpls, otherarray, a, b, c, xaxislabel, yaxislabel, file):
 
     numbuckets = ((maxmt - minmt) // spacing + 1)
     acpls = [[] for _ in range(numbuckets)]
-    ssize = [0] * numbuckets
     cis = [0] * numbuckets
     for X in range(0, len(otherarray)):
         temp = (int(otherarray[X]) - minmt) // spacing
@@ -46,14 +47,12 @@ def compare(cpls, otherarray, a, b, c, xaxislabel, yaxislabel, file):
         if temp < 0:
             temp = 0
         acpls[temp].append(cpls[X])
-        ssize[temp] += 1
 
     for X in range(0, len(cis)):
-        cis[X] = normalci(acpls[X])
         # if there weren't any cpls in the bucket, assign arbitrary acpl
         if len(acpls[X]) == 0:
-            acpls[X] = -100
-            continue
+            acpls[X] = [-100]
+        cis[X] = normalci(acpls[X])
         acpls[X] = sum(acpls[X]) / len(acpls[X])
 
     xaxis = range(minmt, maxmt + spacing, spacing)
