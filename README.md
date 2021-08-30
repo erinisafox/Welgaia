@@ -1,5 +1,5 @@
 # Welgaia
-Looking at distributions of chess player behavior
+Looking at distributions of chess player behavior. The aim of this repo is to be able to show a player's chess stats in graphical form, which is something we usually can't do. 
 
 Welgaia, The Holy City (神聖都市ヴィルガイア Shinsei Toshi Virugaia?) the Holy City, is a city populated entirely by angels and serves as the main base of Cruxis in Tales of Symphonia. The only way to enter the city is through the Tower of Salvation. It is filled with high technology and computers that serve as archives. (Source: Aselia Wiki).
 
@@ -15,4 +15,8 @@ Requirements:
 - python-chess
 - tqdm
 - matplotlib
-- numpy and other packages (eventually)
+
+What to expect:
+A beautiful plot like this!
+
+![Sample Picture](https://github.com/erinisafox/Welgaia/blob/main/sample/erinyu_blitz_1000_evaluation_acpl.png)
