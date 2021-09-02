@@ -1,5 +1,4 @@
 # ye-eun yu
-# 7/31/2021
 
 # PURPOSE: Plot various stats about a player.
 # Try to detect distributional trends in a player's performance.
@@ -55,6 +54,7 @@ def mainloop():
     legalmoveslist = []
     phaseslist = []
     mistakespergamelist = []
+    variancelist = []
     while True:
         print("")
         print("Welgaia")
@@ -80,23 +80,19 @@ def mainloop():
             # plotting magic here
             # args: yarray, xarray, minbucket, overflow, binwidth, xlabel, ylabel, file
             plotter.frequency(acpllist, 0, 200, 10, "acpl", file)
-            plotter.frequency(movetimelist, 0, 20, 1, "movetime", file)
+            plotter.frequency(movetimelist, 0, 60, 2, "movetime", file)
             plotter.frequency(mistakespergamelist, 0, 20, 1, "mistakespergame", file)
             plotter.compare(acpllist, remainingtimelist, 0, 180, 6, "remainingtime", "acpl", file)
-            plotter.compare(acpllist, movetimelist, 0, 10, 1, "movetime", "acpl", file)
+            plotter.compare(isamistakelist, legalmoveslist, 0, 30, 1, "legalmoves", "percentmistakes", file)
+            plotter.compare(acpllist, movetimelist, 0, 10, 2, "movetime", "acpl", file)
             plotter.compare(acpllist, evalslist, -900, 900, 150, "evaluation", "acpl", file)
             plotter.compare(movetimelist, evalslist, -900, 900, 150, "evaluation", "movetime", file)
-            plotter.compare(acpllist, legalmoveslist, 1, 30, 1, "legalmoves", "acpl", file)
-            plotter.compare(movetimelist, legalmoveslist, 1, 40, 1, "legalmoves", "movetime", file)
-            plotter.compare(remainingtimelist, legalmoveslist, 1, 40, 1, "legalmoves", "remainingtime", file)
-            plotter.compare(evalslist, legalmoveslist, 1, 40, 1, "legalmoves", "evaluation", file)
             plotter.compare(acpllist, phaseslist, 1, 14, 1, "gamephase", "acpl", file)
+            plotter.compare(movetimelist, phaseslist, 1, 14, 1, "gamephase", "movetime", file)
             plotter.compare(movetimelist, remainingtimelist, 0, 180, 6, "remainingtime", "movetime", file)
             plotter.compare(remainingtimelist, phaseslist, 1, 14, 1, "gamephase", "remainingtime", file)
-            plotter.compare(legalmoveslist, phaseslist, 1, 14, 1, "gamephase", "legalmoves", file)
-            plotter.compare(isamistakelist, legalmoveslist, 1, 40, 1, "legalmoves", "percentmistakes", file)
             plotter.compare(isamistakelist, movetimelist, 0, 10, 1, "movetime", "percentmistakes", file)
-            plotter.compare(isamistakelist, movetimelist, 0, 10, 1, "movetime", "percentmistakes", file)
+            plotter.compare(isamistakelist, evalslist, -900, 900, 150, "evaluation", "percentmistakes", file)
         if i == '0':
             return
 
