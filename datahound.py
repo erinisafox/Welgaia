@@ -37,7 +37,7 @@ def hound(file, focus, numgames):
 
     pgn = open(file)
 
-    maxcpl = 2000  # upper bound for cpl. +/-10 is what lichess likes to do, but creates weird effects at extremes.
+    maxcpl = 1000  # upper bound for cpl. +/-10 is what lichess likes to do, but creates weird effects at extremes.
 
     acpllist = []
     movetimelist = []
@@ -72,8 +72,14 @@ def hound(file, focus, numgames):
             timecontrol = game.headers["TimeControl"].split("+")
             basetc = int(timecontrol[0])
             inctc = int(timecontrol[1])
+
+            #decide here to exclude non 3+0 games or not
             if basetc != 180 or inctc != 0:
                 pass
+
+            # initialize variables for white and black increment (in case of berserk)
+            inctccolor = [inctc, inctc]
+
             # get evals and clock times for both players
             # will only care about pov player later on
 
@@ -81,8 +87,9 @@ def hound(file, focus, numgames):
             board.reset()
             for node in game.mainline():
                 weval = node.eval()
+                timeleft = node.clock()
                 board.push(node.move)
-                if weval is None:
+                if weval is None or timeleft is None:
                     continue
                 weval = weval.white().score(mate_score=2000)
                 if weval < -maxcpl:
@@ -90,13 +97,12 @@ def hound(file, focus, numgames):
                 if weval > maxcpl:
                     weval = maxcpl
 
-                timeleft = node.clock()
                 phaselist.append(calcPhase(board.fen()))
                 evallist.append(weval)
                 timeleftlist.append(timeleft)
                 nummoveslist.append(board.legal_moves.count())
         except:
-            print(f"Skipped Game {X+1} because some nonsense happened")
+            print(f"Skipped Game {X+1} because some nonsense happened. {game.headers['Site']}")
             continue
         # end
 
@@ -107,11 +113,18 @@ def hound(file, focus, numgames):
         else:
             start = 3
 
+        # adjust increment in presence of berserk
+        if len(timeleftlist) > 2:
+            if timeleftlist[0] < basetc:
+                inctccolor[0] = 0
+            if timeleftlist[1] < basetc:
+                inctccolor[1] = 0
+
         # calculation of acpl, move time, etc. uses evals, time remaining, etc.
         # change the step size to 2 if you care about a specific player
         for X in range(start, len(timeleftlist), singleordouble):
             acpllist.append(calcCpl(evallist[X - 1], evallist[X], X))
-            movetimelist.append(timeleftlist[X - 2] - timeleftlist[X] + inctc)
+            movetimelist.append(timeleftlist[X - 2] - timeleftlist[X] + inctccolor[X % 2])
             remainingtimelist.append(timeleftlist[X])
             evalslist.append(evallist[X])
             legalmoveslist.append(nummoveslist[X])
