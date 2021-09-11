@@ -63,7 +63,7 @@ def hound(file, focus, numgames):
             mistakespergame = 0
 
             # figure out the focus player's pov
-            if game.headers["White"].lower() in focus.lower():
+            if game.headers["White"].replace("_","-").lower() in focus.lower():
                 pov = True  # we got white
             else:
                 pov = False  # we got black
@@ -72,10 +72,6 @@ def hound(file, focus, numgames):
             timecontrol = game.headers["TimeControl"].split("+")
             basetc = int(timecontrol[0])
             inctc = int(timecontrol[1])
-
-            #decide here to exclude non 3+0 games or not
-            if basetc != 180 or inctc != 0:
-                pass
 
             # initialize variables for white and black increment (in case of berserk)
             inctccolor = [inctc, inctc]
@@ -89,13 +85,13 @@ def hound(file, focus, numgames):
                 weval = node.eval()
                 timeleft = node.clock()
                 board.push(node.move)
-                if weval is None or timeleft is None:
-                    continue
-                weval = weval.white().score(mate_score=2000)
-                if weval < -maxcpl:
-                    weval = -maxcpl
-                if weval > maxcpl:
-                    weval = maxcpl
+
+                if weval is not None:
+                    weval = weval.white().score(mate_score=2000)
+                    if weval < -maxcpl:
+                        weval = -maxcpl
+                    if weval > maxcpl:
+                        weval = maxcpl
 
                 phaselist.append(calcPhase(board.fen()))
                 evallist.append(weval)
@@ -123,19 +119,29 @@ def hound(file, focus, numgames):
         # calculation of acpl, move time, etc. uses evals, time remaining, etc.
         # change the step size to 2 if you care about a specific player
         for X in range(start, len(timeleftlist), singleordouble):
-            acpllist.append(calcCpl(evallist[X - 1], evallist[X], X))
-            movetimelist.append(timeleftlist[X - 2] - timeleftlist[X] + inctccolor[X % 2])
-            remainingtimelist.append(timeleftlist[X])
+            if evallist[X-1] is not None and evallist[X] is not None:
+                acpllist.append(calcCpl(evallist[X - 1], evallist[X], X))
+                if acpllist[-1] > 100:
+                    isamistakelist.append(100)
+                    mistakespergame += 1
+                else:
+                    isamistakelist.append(0)
+            else:
+                acpllist.append(None)
+                isamistakelist.append(None)
+            if timeleftlist[X-2] is not None and timeleftlist[X] is not None:
+                movetimelist.append(timeleftlist[X - 2] - timeleftlist[X] + inctccolor[X % 2])
+                remainingtimelist.append(timeleftlist[X])
+            else:
+                movetimelist.append(None)
+                remainingtimelist.append(None)
             evalslist.append(evallist[X])
             legalmoveslist.append(nummoveslist[X])
             phaseslist.append(phaselist[X])
-            if acpllist[-1] > 100:
-                isamistakelist.append(100)
-                mistakespergame += 1
-            else:
-                isamistakelist.append(0)
-        if len(evallist) > 1:
+        if len(evallist) > 1 and evallist[0] is not None:
             mistakespergamelist.append(mistakespergame)
+        else:
+            mistakespergamelist.append(None)
 
     return evalslist, remainingtimelist, acpllist, movetimelist, isamistakelist, legalmoveslist, phaseslist, mistakespergamelist
 
