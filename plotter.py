@@ -25,13 +25,22 @@ def savePlot(plt, xaxislabel, yaxislabel, file):
     print(f"Saved {newdir}_{xaxislabel}_{yaxislabel}.png")
     return
 
-
 # plot anything comparing two factors
 # acpl/movetime, acpl/timeleft, etc.
 # groups cpls into buckets defidned by max bucket a and bin width b
 # then takes an average of those cpls per bucket to calculate acpls
 def compare(cpls, otherarray, a, b, c, xaxislabel, yaxislabel, file):
     plt.clf()
+
+    # clear out any nonetypes
+    cplstemp = []
+    otherarraytemp = []
+    for X in range(0, len(cpls)):
+        if cpls[X] is not None and otherarray[X] is not None:
+            cplstemp.append(cpls[X])
+            otherarraytemp.append(otherarray[X])
+    cpls = cplstemp
+    otherarray = otherarraytemp
 
     minmt = a
     maxmt = b  # seconds for overflow bucket
@@ -69,6 +78,9 @@ def compare(cpls, otherarray, a, b, c, xaxislabel, yaxislabel, file):
 # cpl distribution, movetime distribution, etc.
 def frequency(array, a, b, c, xaxislabel, file):
     plt.clf()
+
+    # clear out any nonetypes
+    array = [x for x in array if x is not None]
 
     freq = [0] * ((b - a) // c + 1)
     for X in array:
