@@ -19,4 +19,4 @@ Requirements:
 What to expect:
 A beautiful plot like this!
 
-![Sample Picture](https://github.com/erinisafox/Welgaia/blob/main/sample/erinyu_blitz_1000_evaluation_acpl.png)
+![Sample Picture](https://github.com/erinisafox/Welgaia/blob/main/sample/erinyu_blitz_1000_gamephase_remainingtime.png)
