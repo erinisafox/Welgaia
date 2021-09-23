@@ -48,14 +48,7 @@ def mainloop():
     file = "nothing, yet"
     focus = ""
     numgames = 0
-    evalslist = []
-    remainingtimelist = []
-    acpllist = []
-    movetimelist = []
-    isamistakelist = []
-    legalmoveslist = []
-    phaseslist = []
-    mistakespergamelist = []
+    results = None
 
     while True:
         print("")
@@ -115,24 +108,48 @@ def mainloop():
             if file == "nothing, yet":
                 print("No file selected, yet")
                 continue
-            evalslist, remainingtimelist, acpllist, movetimelist, isamistakelist, legalmoveslist, phaseslist, mistakespergamelist = datahound.hound(file, focus, numgames)
+
+            results = datahound.hound(file, focus, numgames)
+            continue
         if i == '4':
-            if evalslist == []:
+            if results is None:
                 print("Nothing to plot since nothing was hounded")
                 continue
             # plotting magic here
-            # args: yarray, xarray, minbucket, overflow, binwidth, xlabel, ylabel, file
-            plotter.frequency(acpllist, 0, 200, 10, "acpl", file)
-            plotter.frequency(movetimelist, 0, 20, 1, "movetime", file)
-            plotter.frequency(mistakespergamelist, 0, 20, 1, "mistakespergame", file)
-            plotter.compare(acpllist, movetimelist, 0, 10, 2, "movetime", "acpl", file)
-            plotter.compare(acpllist, evalslist, -900, 900, 150, "evaluation", "acpl", file)
-            plotter.compare(movetimelist, evalslist, -900, 900, 150, "evaluation", "movetime", file)
-            plotter.compare(acpllist, phaseslist, 1, 14, 1, "gamephase", "acpl", file)
-            plotter.compare(movetimelist, phaseslist, 1, 14, 1, "gamephase", "movetime", file)
-            plotter.compare(remainingtimelist, phaseslist, 1, 14, 1, "gamephase", "remainingtime", file)
-            plotter.compare(isamistakelist, movetimelist, 0, 10, 1, "movetime", "percentmistakes", file)
-            plotter.compare(isamistakelist, evalslist, -900, 900, 150, "evaluation", "percentmistakes", file)
+            # 0 = empty
+            # 1 = evaluations (player)
+            # 2 = remaining time (player)
+            # 3 = acpl (player)
+            # 4 = move times (player)
+            # 5 = mistake flag (player)
+            # 6 = number of legal moves (all)
+            # 7 = number of pieces left
+            # 8 = mistakes per game
+            # 9 = player rating (player)
+            # 10 = opponent rating
+            # 11 = game result (player)
+            # args: yarray, xarray, minbucket, overflow, binwidth, xlabel, ylabel, boxyay, file
+            plotter.frequency(results[3], 0, 200, 10, "acpl", file)
+            plotter.frequency(results[4], 0, 20, 1, "movetime", file)
+            plotter.frequency(results[8], 0, 20, 1, "mistakespergame", file)
+            plotter.compare(results[3], results[4], 0, 10, 2, "movetime", "acpl", True, file)
+            plotter.compare(results[3], results[1], -900, 900, 150, "evaluation", "acpl", True, file)
+            plotter.compare(results[4], results[1], -900, 900, 150, "evaluation", "movetime", True, file)
+            plotter.compare(results[3], results[7], 1, 14, 1, "gamephase", "acpl", True, file)
+            plotter.compare(results[4], results[7], 1, 14, 1, "gamephase", "movetime", True, file)
+            plotter.compare(results[2], results[7], 1, 14, 1, "gamephase", "remainingtime", True, file)
+            plotter.compare(results[2], results[4], 0, 20, 1, "movetime", "remainingtime", True, file)
+            plotter.compare(results[4], results[2], 0, 600, 60, "remainingtime", "movetime", True, file)
+            plotter.compare(results[5], results[4], 0, 10, 1, "movetime", "percentmistakes", False, file)
+            plotter.compare(results[5], results[1], -900, 900, 150, "evaluation", "percentmistakes", False, file)
+            plotter.compare(results[5], results[9], 800, 3000, 200, "playerrating", "percentmistakes", False, file)
+            plotter.compare(results[5], results[10], -500, 500, 100, "opponentrating", "percentmistakes", False, file)
+            plotter.compare(results[3], results[9], 800, 3000, 200, "playerrating", "acpl", True, file)
+            plotter.compare(results[3], results[10], -500, 500, 100, "opponentrating", "acpl", True, file)
+            plotter.compare(results[4], results[9], 800, 3000, 200, "playerrating", "movetime", True, file)
+            plotter.compare(results[4], results[10], -500, 500, 100, "opponentrating", "movetime", True, file)
+            plotter.compare(results[11], results[1], -500, 500, 100, "evaluation", "score", False, file)
+            continue
         if i == '0':
             return
 
