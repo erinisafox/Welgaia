@@ -1,7 +1,7 @@
-# ye-eun yu
-# 7/31/2021
+# first created 7/31/2021
+# last updated 5/12/2023
 
-# PURPOSE: Plot various stats about a player.
+# PURPOSE: Plot various stats about a player or entire PGNs.
 # Try to detect distributional trends in a player's performance.
 
 import glob
@@ -10,9 +10,9 @@ import datahound
 import plotter
 import requests
 
-# file should be generated from api, for example see below
-# beware, every game should have analysis. this does not guarantee that.
-# pgn may have 1000 games, but if only 10 games have analysis, it won't tell you
+# pgn files should be generated from api, for example see below
+# if a given pgn does not have analysis, then analysis will be skipped
+# the number _XXXX.pgn on a pgn does not necessarily refer to the number of games actually in the file
 
 # https://lichess.org/api/games/user/erinyu?perfType=blitz&rated=true&max=1000&evals=true&clocks=true
 
@@ -21,7 +21,7 @@ import requests
 # selects a pgn from your file directory and prepares the contents to be hounded
 def selectPGN():
     while True:
-        listoffiles = glob.glob(f'.{os.sep}pgn{os.sep}*.pgn')
+        listoffiles = glob.glob(f'pgn/*.pgn') #add .bz2 to the end if analyzing a .bz2
         print('')
         for i, f in enumerate(listoffiles, 1):
             print(f'({i}) {f}')
@@ -48,7 +48,7 @@ def mainloop():
     file = "nothing, yet"
     focus = ""
     numgames = 0
-    results = None
+    results = []
 
     while True:
         print("")
@@ -58,6 +58,7 @@ def mainloop():
         print('(2) Download a PGN file from Lichess')
         print(f'(3) Hound data from {file.split(os.sep)[-1]}')
         print('(4) Plot what there is to plot')
+        print(f'(5) Load save file of {file.split(os.sep)[-1]}')
         print('(0) Rage quit')
 
         i = input()
@@ -86,17 +87,24 @@ def mainloop():
                         print("Download failed?")
                         continue
                 print("\nDownload successful!\n")
+                file = f'.{os.sep}pgn{os.sep}{suspect.replace("_","-")}_{variant}_{numgame}.pgn'
+                focus = suspect
+                numgames = int(numgame)
             elif i == '2':
                 suspect = input("\nEnter arena ID: ")
                 numgame = input("Enter number of games: ")
+                specific = input("Any specific player? (Else skip this): ")
                 print("\nAre you sure?")
                 print("(1) Let's start downloading")
                 print("(2) Forget everything I said")
                 if input() == "1":
                     try:
+                        if specific != "":
+                            specific.replace("_","-")
+                            specific = specific + "_"
                         url = f'https://lichess.org/api/tournament/{suspect}/games?evals=true&clocks=true'
                         r = requests.get(url, allow_redirects=True)
-                        writefile = open(f'.{os.sep}pgn{os.sep}{suspect}_{numgame}.pgn', 'wb')
+                        writefile = open(f'.{os.sep}pgn{os.sep}{specific}{suspect}_{numgame}.pgn', 'wb')
                         writefile.write(r.content)
                     except:
                         print("Download failed?")
@@ -110,11 +118,19 @@ def mainloop():
                 continue
 
             results = datahound.hound(file, focus, numgames)
+
+            tempsave = open(f"{file.split(os.sep)[-1][:-4]}_save222.txt", "w")
+            for X in range(0,len(results)):
+                tempsave.write(str(results[X]))
+                tempsave.write("\n")
+            tempsave.close()
             continue
+
         if i == '4':
             if results is None:
                 print("Nothing to plot since nothing was hounded")
                 continue
+
             # plotting magic here
             # 0 = empty
             # 1 = evaluations (player)
@@ -128,27 +144,56 @@ def mainloop():
             # 9 = player rating (player)
             # 10 = opponent rating
             # 11 = game result (player)
+            # 12 = ply
+            # 13 = evaluation (player, %)
+            # 14 = acpl (player, %)
             # args: yarray, xarray, minbucket, overflow, binwidth, xlabel, ylabel, boxyay, file
-            plotter.frequency(results[3], 0, 200, 10, "acpl", file)
-            plotter.frequency(results[4], 0, 20, 1, "movetime", file)
-            plotter.frequency(results[8], 0, 20, 1, "mistakespergame", file)
-            plotter.compare(results[3], results[4], 0, 10, 2, "movetime", "acpl", True, file)
-            plotter.compare(results[3], results[1], -900, 900, 150, "evaluation", "acpl", True, file)
-            plotter.compare(results[4], results[1], -900, 900, 150, "evaluation", "movetime", True, file)
-            plotter.compare(results[3], results[7], 1, 14, 1, "gamephase", "acpl", True, file)
-            plotter.compare(results[4], results[7], 1, 14, 1, "gamephase", "movetime", True, file)
-            plotter.compare(results[2], results[7], 1, 14, 1, "gamephase", "remainingtime", True, file)
-            plotter.compare(results[2], results[4], 0, 20, 1, "movetime", "remainingtime", True, file)
-            plotter.compare(results[4], results[2], 0, 600, 60, "remainingtime", "movetime", True, file)
-            plotter.compare(results[5], results[4], 0, 10, 1, "movetime", "percentmistakes", False, file)
-            plotter.compare(results[5], results[1], -900, 900, 150, "evaluation", "percentmistakes", False, file)
-            plotter.compare(results[5], results[9], 800, 3000, 200, "playerrating", "percentmistakes", False, file)
-            plotter.compare(results[5], results[10], -500, 500, 100, "opponentrating", "percentmistakes", False, file)
-            plotter.compare(results[3], results[9], 800, 3000, 200, "playerrating", "acpl", True, file)
-            plotter.compare(results[3], results[10], -500, 500, 100, "opponentrating", "acpl", True, file)
-            plotter.compare(results[4], results[9], 800, 3000, 200, "playerrating", "movetime", True, file)
-            plotter.compare(results[4], results[10], -500, 500, 100, "opponentrating", "movetime", True, file)
-            plotter.compare(results[11], results[1], -500, 500, 100, "evaluation", "score", False, file)
+            plotter.frequency(results[14], 0, 100, 2, "loss", file)
+            plotter.frequency(results[4], 0, 30, 1, "movetime", file)
+            #plotter.frequency(results[2], 0, 180, 2, "remainingtime", file)
+            #plotter.frequency(results[6], 0, 72, 1, "legalmoves", file)
+            #plotter.frequency(results[7], 0, 78, 1, "boardmaterial", file)
+            #plotter.frequency(results[6], 0, 72, 1, "legalmoves", file)
+            #plotter.frequency(results[13], 0, 100, 2, "evaluation", file)
+
+            plotter.compare(results[14], results[4], 0, 30, 1, "movetime", "loss", False, file)
+            plotter.compare(results[14], results[13], 0, 100, 2, "evaluation", "loss", False, file)
+            plotter.compare(results[4], results[13], 0, 100, 2, "evaluation", "movetime", False, file)
+            plotter.compare(results[14], results[7], 0, 78, 1, "gamephase", "loss", False, file)
+            plotter.compare(results[4], results[7], 0, 78, 1, "gamephase", "movetime", False, file)
+            plotter.compare(results[14], results[6], 0, 72, 1, "legalmoves", "loss", False, file)
+            plotter.compare(results[4], results[6], 0, 72, 1, "legalmoves", "movetime", False, file)
+            plotter.compare(results[14], results[2], 0, 180, 2, "remainingtime", "loss", False, file)
+            plotter.compare(results[4], results[2], 0, 180, 2, "remainingtime", "movetime", False, file)
+
+            #plotter.compare(results[2], results[12], 20, 60, 1, "ply", "remainingtime", False, file)
+            #plotter.compare(results[4], results[12], 20, 60, 1, "ply", "movetime", False, file)
+            #plotter.compare(results[6], results[12], 20, 60, 1, "ply", "legalmoves", False, file)
+            #plotter.compare(results[7], results[12], 20, 60, 1, "ply", "boardmaterial", False, file)
+            #plotter.compare(results[13], results[12], 20, 60, 1, "ply", "evaluation", False, file)
+            #plotter.compare(results[14], results[12], 20, 60, 1, "ply", "loss", False, file)
+
+
+
+            continue
+
+        if i == '5': # loading save files
+            try:
+                savefile = open(f"save/{file.split(os.sep)[-1][:-4]}_save.txt", "r")
+            except:
+                print("File not found?")
+                continue
+            results = [[] for _ in range(15)]  # 15 is arbitrary. increase if more space is needed
+            temp = savefile.readline()
+            for X in range(1, len(results)):
+                temp = (savefile.readline())[1:-2].split(", ")
+                for Y in range(0,len(temp)):
+                    try:
+                        results[X].append(float(temp[Y]))
+                    except:
+                        results[X].append(None)
+                print(f"Recovered row {X} of {len(results)-1}...")
+            print("Recovery done!")
             continue
         if i == '0':
             return
